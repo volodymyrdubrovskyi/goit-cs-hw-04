@@ -1,5 +1,3 @@
-import logging
-
 from pathlib import Path
 from multiprocessing import Semaphore, Process, Queue
 from time import time
