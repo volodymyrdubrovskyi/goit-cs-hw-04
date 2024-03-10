@@ -10,32 +10,43 @@ def find_word_in_file(condition, path: Path, word, q: Queue):
     with condition:
         text = read_file(path)
         if word in text:
-            q.put(str(path)) 
+            q.put((word, str(path))) 
 
 def main():
-    initial_folder = Path("./Files")
-    word = "Hello"
-    result_dic[word] = []
+    initial_folder = Path("./Files2")
+    words = ["Hello", "World", "Kaput"]
+    for word in words:
+        result_dic[word] = []
     file_list = create_files_list(initial_folder)
     
+    print(f"Using Multiprocessing.....")
     time_of_start = time()
 
-    pool = Semaphore(3)
+    pool = Semaphore(5)
     q = Queue()
     processes = []
-    for file in file_list:
-        proc = Process(name=str(file), target=find_word_in_file, args=(pool, file, word, q))
-        proc.start()
-        processes.append(proc)
-    [el.join() for el in processes]
+    for word in words:    
+        for file in file_list:
+            proc = Process(name=str(file), target=find_word_in_file, args=(pool, file, word, q), daemon=True)
+            proc.start()
+            processes.append(proc)
+    
+    # complete the processes
+    for proc in processes:
+        proc.join()
 
     while not q.empty():
-        result_dic[word].append(q.get())
+        rec = q.get()
+        result_dic[rec[0]].append(rec[1])
 
-    print(f"Using Multiprocessing.....\nList of files with word '{word}' in folder '{initial_folder}':")
-    for file in result_dic[word]:
-        print(f"{file}")
+    for word in words:
+        print(f"List of files with word '{word}' in folder '{initial_folder}':")
+        for file in result_dic[word]:
+            print(f"{file}")
+
     print(f"Time elapsed: {round(time()-time_of_start, 5)}")
+
+    print(result_dic)
 
 if __name__ == "__main__":
     main()

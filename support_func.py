@@ -17,4 +17,8 @@ def create_files_list(path: Path):
 # Read the file
 def read_file(filename: Path):
     with open(filename, 'r') as f:
-        return f.read()
+        try:
+            result = f.read()
+        except:
+            result = ""
+        return result
